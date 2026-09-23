@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Game Shop Oran — PS4 9.00 FW GoldHEN</title>
+<link rel="stylesheet" href="../style.css">
+<script src="int64.js"></script>
+<script src="rop.js"></script>
+<script src="kexploit.js"></script>
+<script src="webkit.js"></script>
+
+<style id="game-shop-oran-style">
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif}
+body{
+    background:#071522 !important;
+    background-image:none !important;
+    color:#fff;
+    text-align:center;
+    overflow-x:hidden;
+    padding:28px 14px 45px;
+}
+.game-header{
+    width:min(900px,94%);
+    margin:0 auto 25px;
+    padding:24px 18px;
+    border:1px solid #ff7300;
+    border-radius:22px;
+    background:#071522;
+    box-shadow:0 0 25px rgba(255,115,0,.14);
+}
+.logo{
+    width:120px;height:120px;object-fit:cover;border-radius:50%;
+    display:block;margin:0 auto 14px;
+    border:4px solid #ff7300;
+}
+.brand{
+    margin:0;font-size:clamp(30px,6vw,52px);
+    font-weight:900;letter-spacing:3px;color:#fff;
+}
+.brand span{color:#ff7300}
+.tagline{margin:10px 0 0;color:#9defff;font-size:13px;letter-spacing:2px}
+.phone{margin:12px 0 0;font-size:19px;font-weight:800}
+.phone span{color:#ff7300}
+.status-panel{
+    width:min(850px,92%);
+    margin:25px auto;
+    padding:22px 15px;
+    border:1px solid rgba(0,220,255,.25);
+    border-radius:18px;
+    background:#071522;
+}
+#msgs{
+    margin:0!important;
+    font-size:clamp(21px,4vw,30px)!important;
+    line-height:1.4;
+}
+.game-footer{
+    width:min(850px,92%);
+    margin:28px auto 10px;
+    padding:16px 10px;
+    border-top:1px solid #ff7300;
+    color:#b9c7d2;
+}
+.facebook{color:#ff7300;font-weight:800}
+</style>
+
+</head>
+<body onload="setTimeout(poc, 50);">
+<script>
+if (window.applicationCache.status=='0'){window.location.replace("cache.html");}
+</script>
+<section class="game-header">
+  <img class="logo" src="../img.jpg" alt="Game Shop Oran">
+  <h1 class="brand">GAME SHOP <span>ORAN</span></h1>
+  <div class="tagline">PS4 • GOLDHEN • GAMING EXPERIENCE</div>
+  <div class="phone">📞 <span>0560 60 25 85</span></div>
+</section>
+<hr>
+<section class="status-panel">
+  <h1 id="msgs">Loading GoldHEN v2.4b18.12... Please Wait</h1>
+</section>
+<footer class="game-footer">Page Facebook : <span class="facebook">Game Shop Oran</span></footer>
+<script>
+function allset(){
+msgs.innerHTML = LoadedMSG
+}
+
+function load_poc(){
+ var req = new XMLHttpRequest();
+ req.responseType = "arraybuffer";
+ req.open('GET', PLfile);
+ req.send();
+ req.onreadystatechange = function () {
+  if (req.readyState == 4) {
+   PLD = req.response;
+   var payload_buffer = chain.syscall(477, 0, PLD.byteLength*4 , 7, 0x1002, -1, 0);
+   var pl = p.array_from_address(payload_buffer, PLD.byteLength*4);
+   var padding = new Uint8Array(4 - (req.response.byteLength % 4) % 4);
+   var tmp = new Uint8Array(req.response.byteLength + padding.byteLength);
+   tmp.set(new Uint8Array(req.response), 0);
+   tmp.set(padding, req.response.byteLength);
+   var shellcode = new Uint32Array(tmp.buffer);
+   pl.set(shellcode,0);
+   var pthread = p.malloc(0x10);
+   chain.call(libKernelBase.add32(OFFSET_lk_pthread_create), pthread, 0x0, payload_buffer, 0);
+   allset();
+  }
+ };
+}
+
+function jbdone(){
+LoadedMSG = "GoldHEN v2.4b18.12 Loaded ...";
+PLfile = "goldhen_2.4b18.12.bin";
+setTimeout(load_poc, 500);
+}
+</script>
+</body>
+</html>
